@@ -18,13 +18,16 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+
+#pickle
+import pickle
 #%%
 #visualize results functions (import functions from file viz_results.py)
 from viz_results import *
 #%%
 def load_data(database_filepath):
 	cwd = os.getcwd()
-	os.chdir('../data/')
+	os.chdir(os.path.dirname(database_filepath))
 	database_name = os.path.basename(database_filepath)
 	engine = create_engine('sqlite:///'+database_name)
 	df = pd.read_sql_table('MessagesCategories',engine)
@@ -108,12 +111,9 @@ def main():
         
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
-		
-		# print('Plotting model results...')
-        # plot_model(model, X_test, Y_test, category_names)
 
-#        print('Saving model...\n    MODEL: {}'.format(model_filepath))
-#        save_model(model, model_filepath)
+        print('Saving model...\n    MODEL: {}'.format(model_filepath))
+        save_model(model, model_filepath)
 
         print('Trained model saved!')
 
