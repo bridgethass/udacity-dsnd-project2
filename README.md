@@ -30,23 +30,23 @@ Udacity Data Science Nanodegree Project 2 - Disaster Response Pipeline
 
 ## Project Motivation<a name="motivation"></a>
 
-This project ...
+This project classifies messages sent during a disaster in order to direct them to an appropriate disaster relief agency. 
 
 ## Data Descriptions <a name="data"></a>
-
-  1) `disaster_categories.csv`: 
-  2) `disaster_messages.csv`: 
+  
+  1) `disaster_messages.csv`: messages sent during disasters via social media or directly to disaster response organizations
+  2) `disaster_categories.csv`: category of disaster messages (36 options total)
 
 ## File Descriptions <a name="files"></a>
 
 The repository contains the following files:
 
-    1) data/process_data.py
-    2) models/train_classifier.py
-    3) models/viz_results.py
+    1) data/process_data.py : ETL pipeline to merge and clean the disaster messages and categories into the sqlite DisasterResponses.db
+    2) models/train_classifier.py : model pipeline to train and classify the disaster messages into categories
+    3) models/viz_results.py : functions to plot the classification results (precision, recall, f1-score)
 
 ## Results<a name="results"></a>
 
 ## Licensing, Authors, Acknowledgments <a name="licensing"></a>
 
-Data is provided by [...](http://) The code here is licensed under open source GNU General Public License v3.0, and is free to use as you wish, with no guarantees :)
+Data is provided by [Figure Eight](https://www.figure-eight.com/) The code here is licensed under open source GNU General Public License v3.0, and is free to use as you wish, with no guarantees :)
