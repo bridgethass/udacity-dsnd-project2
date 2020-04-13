@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+@author: bhass
+
+train_classifier.py 
+
+"""
+
 import os, sys, re
 import numpy as np
 import pandas as pd
@@ -26,8 +34,23 @@ import pickle
 from viz_results import *
 #%%
 def load_data(database_filepath):
+	"""
+	load_data pulls in clean data (produced from the ../data/process_data.py) 
+	from the database (db) file located in the ../data directory, reads it into 
+	a dataframe, and returns the features (X, messages) and target variables 
+	(Y, disaster categories)
+
+	ARGS:
+	database_filepath - relative path and database filename (../data/DisasterResponses.db)
+
+	RETURNS:
+	X - feature variable (messages)
+	Y - target variables (category of disaster response,n x 36 array of 0s and 1s)
+	category_names - names of each of the categories
+	"""
 	cwd = os.getcwd()
-	os.chdir(os.path.dirname(database_filepath))
+#	os.chdir(os.path.dirname(database_filepath)+'/')
+	os.chdir('../data/')
 	database_name = os.path.basename(database_filepath)
 	engine = create_engine('sqlite:///'+database_name)
 	df = pd.read_sql_table('MessagesCategories',engine)
@@ -40,68 +63,134 @@ def load_data(database_filepath):
 
 #%%
 def tokenize(text):
-    # normalize case and remove punctuation
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
-    
-    # tokenize text
-    tokens = word_tokenize(text)
-    
-    stop_words = stopwords.words("english")
-    lemmatizer = WordNetLemmatizer()
-    
-    # lemmatize andremove stop words
-    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+	"""
+	tokenize processes text data using nltk packages, carrying out the following transformations:
+		1) normalizes the case (set everything to lower case) and strip whitespace
+		2) for each token - lemmatize (strip to root form), and remove stop words
 
-    return tokens
+	ARGS:
+	text: string of words (input features) to be tokenized
+
+	RETURNS:
+	tokens - tokenized text to be used in model (list)
+	"""
+	# normalize case and remove punctuation
+	text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower().strip())
+
+	# tokenize
+	tokens = word_tokenize(text)
+
+	# lemmatize and remove stop words
+	stop_words = stopwords.words("english")
+	lemmatizer = WordNetLemmatizer()
+	tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+
+	return tokens
 
 #%%
 def build_model():
+	"""
+	build_model 
+	1) sets up a pipeline consisting of the sklearn text feature extractions:
+	CountVectorizer and TfidfTransformer, and then runs a multi-output
+	random forest classifier using GridSearchCV to select the optimal pipeline
+	parameters
+	
+	ARGS: 
+		none - this function just sets up the model, the arguments are applied when this model is fit
+
+	RETURNS:
+	cv - multi-class classifier pipeline fine-tuned using the best parameters 
+	determined from the GridSearchCV
+	"""
+	#set up pipeline with text transformation features and 
+	#multioutput random forest classifier model
 	pipeline = Pipeline([
 		('vect', CountVectorizer(tokenizer=tokenize)),
 		('tfidf', TfidfTransformer()),
-		('clf',  MultiOutputClassifier(SGDClassifier(max_iter=1000),n_jobs=-1))
-#		('clf',  MultiOutputClassifier(RandomForestClassifier()))
+		('clf',  MultiOutputClassifier(RandomForestClassifier()))
 	])
 
-#	parameters = {
-#		'vect__ngram_range': ((1, 1), (1, 2)),
-#		'vect__max_df': (0.5, 0.75, 1.0),
-#		'vect__min_df': (0.05, 0.1),
-#		'tfidf__norm': ('l1', 'l2'),
-##		'clf__estimator__max_iter': (100,1000),
-##		'clf__estimator__loss': ('hinge','log'),
-#	}
-
-	parameters = {
-		'vect__ngram_range': ((1, 1), (1, 2)),
-		'vect__max_df': (0.5, 0.75, 1.0),
-		'vect__min_df': (0.05, 0.1),
-		'tfidf__norm': ('l1', 'l2'),
-		'clf__estimator__max_iter': (100,1000),
-		'clf__estimator__loss': ('hinge','log'),
+	#set up parameters for GridSearchCV, for sake of processing time
+	#only include a few for the random forest classifier
+	rf_parameters = {
+		'clf__estimator__criterion': ['gini', 'entropy'],
+		'clf__estimator__max_depth': [3, None],
+		'clf__estimator__n_estimators': [10, 50, 100]
 	}
 
-	cv = GridSearchCV(pipeline, param_grid=parameters)
+	cv = GridSearchCV(pipeline, param_grid=rf_parameters)
 
 	return cv
 
 #%%
 def evaluate_model(model, X_test, Y_test, category_names):
+	"""
+	evaluate_model uses the model to predict the test set, and then displays
+	the classification report consisting of the precision, recall, f1-score and 
+	support for each category, and saves a figure of the results to 
+	classification_report.png
+	
+	ARGS: 
+		model - 
+		X_text - 
+		Y_test - 
+		category_names
+
+	RETURNS: 
+		print out of classification report scores for each category
+		saves figure "classification_report.png" to working directory
+	"""
+	#predict the model on the test data
 	Y_pred = model.predict(X_test)
+	#display the classifiation report (includes precision, recall , f1-score, and support)
 	print(classification_report(Y_test,Y_pred,target_names=category_names))
+	
+	#use the plot_classificaiton_report function from the viz_results.py module 
+	#to plot the classification scores, save figure to png file
 	plot_classification_report(classification_report(Y_test,Y_pred,target_names=category_names))
+	plt.savefig('classification_report.png', dpi=200, format='png', bbox_inches='tight')
 
 #%%
 def save_model(model, model_filepath):
-    pickle.dump(model, open(model_filepath, 'wb'))
+	"""
+	save_model saves the model as a pickle file to the model_filepath
+	
+	ARGS: 
+		model - model (pipeline) to save
+		model_filepath - pickel model fileath and name
+
+	RETURNS: 
+		saves pickle file to model_filepath
+	"""
+	#write model to pickle file:
+	pickle.dump(model, open(model_filepath, 'wb'))
 
 #%%
 def main():
+	"""
+	main pulls in system arguments from the command line executes the following:
+		1) loads data from database and creates features and target variables
+		2) splits the features and target variables into training and test sets
+		3) builds the pipeline (model) with gridsearch cv
+		4) fits the model to the training data
+		5) evaluates the model (prints the classification report for each category)
+		6) saves the model to a pickel file
+	
+	ARGS: 
+		
+
+	RETURNS: 
+		prints classification report
+		saves classification report figure to working directory (models)
+		saves pickle file to model_filepath
+	"""
+
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=0)
         
         print('Building model...')
         model = build_model()

@@ -33,11 +33,11 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
     # Turn off all the ticks
     ax = plt.gca()    
     for t in ax.xaxis.get_major_ticks():
-        t.tick1On = False
-        t.tick2On = False
+        t.tick1line.set_visible
+        t.tick2line.set_visible
     for t in ax.yaxis.get_major_ticks():
-        t.tick1On = False
-        t.tick2On = False
+        t.tick1line.set_visible
+        t.tick2line.set_visible
 
     # Add color bar
     plt.colorbar(c)
@@ -108,8 +108,8 @@ def plot_classification_report(classification_report, title='Classification repo
 def main():
     plot_classification_report(classification_report(Y_test,y_pred,target_names=list(df.columns[4:].values)))
     plt.show()
-#     plt.savefig('test_plot_classif_report.png', dpi=200, format='png', bbox_inches='tight')
-#     plt.close()
+    plt.savefig('classification_report.png', dpi=200, format='png', bbox_inches='tight')
+    plt.close()
 
 if __name__ == "__main__":
     main()
