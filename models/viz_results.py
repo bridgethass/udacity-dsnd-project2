@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=40, figure_height=20, correct_orientation=False, cmap='RdBu'):
     '''
     Inspired by:
@@ -49,7 +52,7 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
 
     # resize 
     fig = plt.gcf()
-    fig.set_size_inches(cm2inch(18, 24))
+    fig.set_size_inches(10, 15)
 #     fig.set_size_inches(cm2inch(figure_width, figure_height))
     
 def show_values(pc, fmt="%.2f", **kw):
@@ -79,14 +82,18 @@ def plot_classification_report(classification_report, title='Classification repo
     plotMat = []
     support = []
     class_names = []
-    for line in lines[2 : (len(lines) - 2)]:
-        t = line.strip().split()
-        if len(t) < 2: continue
-        classes.append(t[0])
-        v = [float(x) for x in t[1: len(t) - 1]]
-        support.append(int(t[-1]))
-        class_names.append(t[0])
-        plotMat.append(v)
+    for line in lines[2 : (len(lines) - 5)]:
+        try:
+            t = line.strip().split()
+#            print(t)
+            if len(t) < 2: continue
+            classes.append(t[0])
+            v = [float(x) for x in t[1: len(t) - 1]]
+            support.append(int(t[-1]))
+            class_names.append(t[0])
+            plotMat.append(v)
+        except:
+            print('ERROR on ',line)
 
     xlabel = 'Metrics'
     ylabel = 'Classes'
