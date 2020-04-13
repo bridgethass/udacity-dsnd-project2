@@ -2,7 +2,14 @@
 """
 @author: bhass
 
-train_classifier.py 
+train_classifier.py creates a classificaito model for the disaster response messages
+from message and category data generated with the script data/process_data.py,
+which cleans and saves the raw csv data into the DisasterResponse.db file
+
+To run ML pipeline that trains classifier and saves model to classifier.pkl 
+from command prompt, for example:
+
+python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl
 
 """
 
@@ -48,17 +55,26 @@ def load_data(database_filepath):
 	Y - target variables (category of disaster response,n x 36 array of 0s and 1s)
 	category_names - names of each of the categories
 	"""
-	cwd = os.getcwd()
+#	cwd = os.getcwd()
 #	os.chdir(os.path.dirname(database_filepath)+'/')
-	os.chdir('../data/')
-	database_name = os.path.basename(database_filepath)
-	engine = create_engine('sqlite:///'+database_name)
+#	os.chdir('../data/')
+#	database_name = os.path.basename(database_filepath)
+#	engine = create_engine('sqlite:///'+database_name)
+
+	#configure engine
+	engine = create_engine('sqlite:///'+database_filepath)
+	#read the MessagesCategories table into a dataframe
 	df = pd.read_sql_table('MessagesCategories',engine)
+	#drop the child_alone column because this only has zeros 
+	#(will throw error in some pipelines if there is no data for a column)
 	df = df.drop(labels=['child_alone'],axis=1)
+	#separate the message into the feature variable
 	X = df['message'].values
+	#pull out the target variables (categories)
 	Y = df.iloc[:,4:].values
+	#get the names of the categories
 	category_names = df.columns[4:]
-	os.chdir(cwd)
+#	os.chdir(cwd)
 	return X, Y, category_names
 
 #%%
@@ -90,18 +106,18 @@ def tokenize(text):
 #%%
 def build_model():
 	"""
-	build_model 
-	1) sets up a pipeline consisting of the sklearn text feature extractions:
-	CountVectorizer and TfidfTransformer, and then runs a multi-output
-	random forest classifier using GridSearchCV to select the optimal pipeline
-	parameters
+	build_model carries out the following steps:
+		1) sets up a pipeline consisting of the sklearn text feature extractions:
+		CountVectorizer and TfidfTransformer
+		2) creates a multi-output random forest classifier, and
+		3) uses GridSearchCV to select the optimal pipeline parameters
 	
 	ARGS: 
 		none - this function just sets up the model, the arguments are applied when this model is fit
 
 	RETURNS:
-	cv - multi-class classifier pipeline fine-tuned using the best parameters 
-	determined from the GridSearchCV
+		cv - multi-class classifier pipeline fine-tuned using the best parameters 
+		determined from the GridSearchCV
 	"""
 	#set up pipeline with text transformation features and 
 	#multioutput random forest classifier model
@@ -178,7 +194,10 @@ def main():
 		6) saves the model to a pickel file
 	
 	ARGS: 
-		
+		system arguments:
+			train_classifier.py script & filepath: (models/train_classifier.py)
+			database with clean disaster messages and categories: data/DisasterResponse.db 
+			pickle_filepath: (eg. models/classifier.pkl)
 
 	RETURNS: 
 		prints classification report
@@ -186,31 +205,31 @@ def main():
 		saves pickle file to model_filepath
 	"""
 
-    if len(sys.argv) == 3:
-        database_filepath, model_filepath = sys.argv[1:]
-        print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=0)
-        
-        print('Building model...')
-        model = build_model()
-        
-        print('Training model...')
-        model.fit(X_train, Y_train)
-        
-        print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+	if len(sys.argv) == 3:
+		database_filepath, model_filepath = sys.argv[1:]
+		print('Loading data...\n    DATABASE: {}'.format(database_filepath))
+		X, Y, category_names = load_data(database_filepath)
+		X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=0)
 
-        print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+		print('Building model...')
+		model = build_model()
 
-        print('Trained model saved!')
+		print('Training model...')
+		model.fit(X_train, Y_train)
 
-    else:
-        print('Please provide the filepath of the disaster messages database '\
-              'as the first argument and the filepath of the pickle file to '\
-              'save the model to as the second argument. \n\nExample: python '\
-              'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+		print('Evaluating model...')
+		evaluate_model(model, X_test, Y_test, category_names)
+
+		print('Saving model...\n    MODEL: {}'.format(model_filepath))
+		save_model(model, model_filepath)
+
+		print('Trained model saved!')
+
+	else:
+		print('Please provide the filepath of the disaster messages database '\
+		'as the first argument and the filepath of the pickle file to '\
+		'save the model to as the second argument. \n\nExample: python '\
+		'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
 
 if __name__ == '__main__':
-    main()
+	main()
