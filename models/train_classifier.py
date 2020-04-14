@@ -2,8 +2,8 @@
 """
 @author: bhass
 
-train_classifier.py creates a classificaito model for the disaster response messages
-from message and category data generated with the script data/process_data.py,
+train_classifier.py creates a classification model for the disaster response 
+message from message and category data generated from data/process_data.py,
 which cleans and saves the raw csv data into the DisasterResponse.db file
 
 To run ML pipeline that trains classifier and saves model to classifier.pkl 
