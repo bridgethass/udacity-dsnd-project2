@@ -55,11 +55,6 @@ def load_data(database_filepath):
 	Y - target variables (category of disaster response,n x 36 array of 0s and 1s)
 	category_names - names of each of the categories
 	"""
-#	cwd = os.getcwd()
-#	os.chdir(os.path.dirname(database_filepath)+'/')
-#	os.chdir('../data/')
-#	database_name = os.path.basename(database_filepath)
-#	engine = create_engine('sqlite:///'+database_name)
 
 	#configure engine
 	engine = create_engine('sqlite:///'+database_filepath)
@@ -74,7 +69,7 @@ def load_data(database_filepath):
 	Y = df.iloc[:,4:].values
 	#get the names of the categories
 	category_names = df.columns[4:]
-#	os.chdir(cwd)
+
 	return X, Y, category_names
 
 #%%
@@ -148,10 +143,10 @@ def evaluate_model(model, X_test, Y_test, category_names):
 	classification_report.png
 	
 	ARGS: 
-		model - 
-		X_text - 
-		Y_test - 
-		category_names
+		model - model, created with build_model
+		X_test - test feature variables (messages), created with train_test_split
+		Y_test - test target variables (categories), created with train_test_split
+		category_names - category names
 
 	RETURNS: 
 		print out of classification report scores for each category
@@ -161,11 +156,6 @@ def evaluate_model(model, X_test, Y_test, category_names):
 	Y_pred = model.predict(X_test)
 	#display the classifiation report (includes precision, recall , f1-score, and support)
 	print(classification_report(Y_test,Y_pred,target_names=category_names))
-	
-	#use the plot_classificaiton_report function from the viz_results.py module 
-	#to plot the classification scores, save figure to png file
-	plot_classification_report(classification_report(Y_test,Y_pred,target_names=category_names))
-	plt.savefig('classification_report.png', dpi=200, format='png', bbox_inches='tight')
 
 #%%
 def save_model(model, model_filepath):
