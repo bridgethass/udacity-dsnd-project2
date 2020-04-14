@@ -26,11 +26,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('MessagesCategories', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -43,9 +43,32 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+	#extract proportion of each category represented in training data
+    category_proportions = df.iloc[:,4:].sum(axis=0)/df.shape[0]
+    category_names = list(df.columns[4:])
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_proportions
+                )
+            ],
+
+            'layout': {
+                'title': 'Proportion of Categories Represented in Test Data',
+                'yaxis': {
+                    'title': "Proportion"
+                },
+                'xaxis': {
+                    'title': "Category"
+                }
+            }
+        },
+        
         {
             'data': [
                 Bar(
@@ -57,13 +80,14 @@ def index():
             'layout': {
                 'title': 'Distribution of Message Genres',
                 'yaxis': {
-                    'title': "Count"
+                    'title': "Proportion"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Category"
                 }
             }
         }
+        
     ]
     
     # encode plotly graphs in JSON
