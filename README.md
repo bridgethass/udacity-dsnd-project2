@@ -45,7 +45,19 @@ The repository contains the following files:
     2) models/train_classifier.py : model pipeline to train and classify the disaster messages into categories
     3) models/viz_results.py : functions to plot the classification results (precision, recall, f1-score)
 
-## Results<a name="results"></a>
+## Results and Discussion<a name="results"></a>
+
+For this project I tested out both the SGD (Stochastic Gradient Descent- Support Vector Machine) and Random Forest Classifiers, and endd up using the Random Forest Model. Results were fairly good for categories that had a larger number of samples, but were generally poor for samples with < 200 data points. In fact many of these categories with small sample sizes ended up with recall and f-scores of zero and had the following warning:
+
+```UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in samples with no true labels.```
+
+Below shows the classification report, where blues are good scores and red are poor scores. This plot was made using the viz_results.py module, which was copied and modified from this [stack overflow post](https://stackoverflow.com/questions/28200786/how-to-plot-scikit-learn-classification-report). You can that the performance is almost entirely related to the number of samples (support):
+
+<img src="./models/classification_report.png" width="500">
+
+The child_alone category, for example, didn't have any training data (this column consisted of all zeros, so was never categorized). This caused some models (eg. the SGD) to fail because each category needs to have at least one data point. Due to this lack of data, I omitted this category. 
+
+The best way to improve the model would be to include more training data, particularly for categories which aren't represented as much. Then GridSearchCV and other model parameter tuning would work well. 
 
 ## Licensing, Authors, Acknowledgments <a name="licensing"></a>
 
