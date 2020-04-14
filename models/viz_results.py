@@ -1,3 +1,13 @@
+"""
+viz_results.py includes functions from the stackoverflow post below, which produce 
+a nice visualization of sklearn classification reports
+
+#https://stackoverflow.com/questions/28200786/how-to-plot-scikit-learn-classification-report
+
+
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 
